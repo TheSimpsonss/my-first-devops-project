@@ -1,5 +1,12 @@
-name: CI Quality Check
+name: CI/CD Quality Check and Deploy
 
+# This section is new. It grants the workflow permissions to do things.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Controls when the workflow will run
 on:
   push:
     branches: [ master ]
@@ -8,6 +15,7 @@ on:
   workflow_dispatch:
 
 jobs:
+  # The test job remains the same
   test:
     runs-on: ubuntu-latest
     steps:
@@ -16,3 +24,25 @@ jobs:
 
       - name: Simple test for "feature" word
         run: grep "feature" readme.md
+
+  # This is the new DEPLOYMENT job
+  deploy:
+    # This job needs the 'test' job to succeed first
+    needs: test
+    # This condition ensures deployment ONLY happens on the master branch, not on PRs
+    if: github.ref == 'refs/heads/master'
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload the entire repository
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
