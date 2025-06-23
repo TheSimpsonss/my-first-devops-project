@@ -1,2 +1,2 @@
 Hello, Devops World!
-This is a new functionality.
+This is a new feature.
